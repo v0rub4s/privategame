@@ -1,1 +1,3 @@
 # privategame
+
+*free
