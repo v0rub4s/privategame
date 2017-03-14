@@ -1,0 +1,278 @@
+﻿
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Определение возрастного рейтинга для игры</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
+            </head>
+    <body>
+
+        <!-- Content -->
+        <section id="layout-content" class="container">
+            <h1 class="text-center">Определение возрастного рейтинга для игры</h1>
+            <hr>
+            <button id="startPool" onclick="$.oc.App.startPool();return false;" class="btn btn-primary btn-lg btn-block">Начать</button>
+			<form style="display: none;" id="form">
+				<h2 id="title_question"></h2>
+				<div class="radio">
+				  	<label>
+					    <input type="radio" name="optionsRadios" value="yes">
+					    Да
+				  	</label>
+				</div>
+				<div class="radio">
+				  	<label>
+					    <input type="radio" name="optionsRadios" value="no">
+					    Нет
+				  	</label>
+				</div>
+			</form>
+        </section>
+
+        <!-- Scripts -->
+        <script src="http://atlas.ru.net/themes/demo/assets/vendor/jquery.js"></script>
+        <script>
+        	+ function($) {
+			    "use strict";
+
+			    var App = function () {
+
+			    	// массив вопросов
+			    	this.questions = []
+
+			    	// номер вопроса
+			    	this.numberQuestion = 0
+
+			    	// DOM элемент (текст вопроса)
+			    	this.titleQuestion = $('#title_question')
+
+			    	// DOM элемент (форма)
+			    	this.form = $('#form')
+
+			    	// DOM элемент (радио кнопки)
+			    	this.input = $('input:radio')
+
+			    	// инициализация всех вопросов
+			    	this.initQuestions()
+
+			    	// вывод массива вопросов в консоль браузера
+			    	console.log(this.questions, this.questions.length)
+
+			    }
+
+			    App.prototype.addQuestion = function (question, limit, startAgain) {
+
+			    	// question   - Вопрос
+			    	// limit      - Рейтинг
+			    	// startAgain
+			    	// если (true)  - необходимо пройти тест заного
+			    	// если (false) - показать следующий вопрос
+
+			    	// startAgain (по умолчанию) - false
+
+			    	// если startAgain не передан функции
+			    	// присваивается false переменной startAgain
+			    	!startAgain && (startAgain = false)
+
+			    	// добавление вопроса в массив вопросов
+			    	this.questions.push({question : question, limit: limit, startAgain: startAgain})
+
+			    }
+
+			    App.prototype.initQuestions = function () {
+
+			    	this.addQuestion('Продукт содержит длительные сцены жестокого насилия и/или очень откровенное сексуальное содержимое, а также сцены с обнажением?', '"AO" ("Adults Only 18+") - "Только для взрослых"')
+
+			    	this.addQuestion('Продукт содержит достаточно жестокое насилие, большое количество крови с расчленением, непристойные сексуальные сцены или грубую ненормативную лексику?', '"M" ("Mature") - "От 17 лет (Для взрослой аудитории)"')
+
+			    	this.addQuestion('Продукт содержит насилие, непристойные сцены, грубый юмор, в меру откровенное сексуальное содержимое, кровь или нечастое использование ненормативной лексики?', '"T" ("Teen") - "Подросткам"')
+
+			    	this.addQuestion('Продукт содержит немного больше мультипликационного или мягкого насилия, или несколько откровенных сцен или минимальное количество крови?', '"E10+" ("Everyone 10 and older") - "Для всех старше 10 лет"')
+
+			    	this.addQuestion('Продукт содержит минимальное насилие, в основном "мультяшного" характера?', '"E" ("Everyone") - "Для всех"')
+
+			    	this.addQuestion('Продукт изначально разрабатывается для детей и обычно представляет собой развивающие игры?', '"E" ("Everyone") - "Для всех"')
+
+			    	this.addQuestion('Продукт содержит усложнённые развивающие игры?', ['"E" ("Everyone") - "Для всех"', '"EC" ("Early childhood") - "Для детей младшего возраста"'])
+
+			    }
+
+			    // Начать опрос
+			    App.prototype.startPool = function () {
+
+			    	// Обнуление счетчика (номер вопроса)
+			    	this.numberQuestion = 0
+
+			    	// спрятать кнопку старта
+			    	$('#startPool').slideUp('fast')
+
+			    	// Рендер вопроса (отображение)
+			    	this.renderQuestion(this.numberQuestion)
+
+			    	// Добавление события клика на радио кнопки
+			    	this.eventClickRadio()
+
+			    }
+
+			    App.prototype.renderQuestion = function (numberQuestion) {
+
+			    	var self = this,
+			    		// текст вопроса
+			    		title = this.questions[numberQuestion].question
+
+			    	this.form.fadeOut('fast', function () {
+
+			    		// если радио кнопки скрыты, отобразить их
+			    		!$('.radio').is(':visible') && $('.radio').show()
+
+			    		// обнулить радио кнопки
+			    		self.input.prop('checked', false)
+			    		
+			    		// заменить текст вопроса
+			    		self.titleQuestion.text(title)
+
+			    		// отобразить форму
+			    		self.form.fadeIn('fast')
+
+			    	})
+
+			    }
+
+			    App.prototype.renderResult = function (numberQuestion, numberLimitText) {
+
+			    	var self = this,
+			    		// определим название результата
+			    		// $.isNumeric - вернуть (true/false) в зависимости от содержимого (цифра или строка)
+			    		title = $.isNumeric(numberLimitText) ? this.questions[numberQuestion].limit[numberLimitText] : this.questions[numberQuestion].limit
+
+			    	// Спрятать форму
+			    	this.form.fadeOut('fast', function () {
+
+			    		// вставить текст рейтинга
+			    		self.titleQuestion.text('Рейтинг: ' + title)
+
+			    		// показать форму
+			    		self.form.fadeIn('fast')
+
+			    		// спрятать радио кнопки
+			    		$('.radio').fadeOut('fast')
+
+			    		// показать кнопку (начать заного)
+			    		$('#startPool').text("Начать заного").slideDown('fast')
+
+			    	})
+
+			    }
+
+			    // Добавление события клика на радио кнопки
+			    App.prototype.eventClickRadio = function () {
+
+			    	var self = this
+
+			    	// unbind - Открепить обработчик клика
+			    	// bind   - Прикрепить обработчик клика
+			    	// unbind использутеся в качестве обнуления события при запуске функции startPool
+			    	// иначе событие будет дублироваться и при нажатии на кнопку собите сработает не 1 раз, а 2 и более раз(а)
+			    	this.input.unbind('click').bind('click', function () {
+
+			    		// вывод в консоль выбранного варианта (yes, no)
+			    		console.log("select " + $(this).val())
+
+			    		// определение последнего вопроса
+			    		if ( self.questions.length - 1 == self.numberQuestion ) {
+
+			    			if ( $(this).val() == 'yes' ) {
+
+			    				// рендер результата с выбранным текстом лимита
+			    				self.renderResult(self.numberQuestion, 0)
+
+			    			} else {
+
+			    				// рендер результата с выбранным текстом лимита
+			    				self.renderResult(self.numberQuestion, 1)
+
+			    			}
+
+			    		} else {
+
+				    		if ( $(this).val() == 'yes' ) {
+
+			    				// рендер результата
+				    			self.renderResult(self.numberQuestion)
+
+				    		} else {
+
+				    			// Если на вопрос ответили (нет) и он последний 
+				    			if ( self.questions[self.numberQuestion].startAgain ) {
+				    				
+				    				// окончить опрос
+				    				self.endPool()
+				    			
+				    			} else {
+					    			
+					    			// следующий вопрос
+					    			self.nextQuestion()
+				    			
+				    			}
+
+				    		}
+			    			
+			    		}
+
+			    	})
+
+			    }
+
+			    // следующий вопрос
+			    App.prototype.nextQuestion = function () {
+
+			    	// прибавить счетчику (номер вопроса) +1
+			    	this.numberQuestion++
+
+			    	// рендер вопроса с номером
+			    	this.renderQuestion(this.numberQuestion)
+
+			    	// вывод в консоль (номер выводимого вопроса)
+			    	console.log('nextQuestion - ' + this.numberQuestion)
+
+			    }
+
+			    // завершение опроса
+			    App.prototype.endPool = function () {
+
+			    	// скрыть форму
+			    	this.form.fadeOut('fast')
+
+			    	// обнулить радио кнопки
+			    	this.input.prop('checked', false)
+
+			    	// спрятать текст вопроса
+			    	this.titleQuestion.slideUp('fast')
+
+			    	// показать кнопку (начать заного)
+		    		$('#startPool').text("Начать заного").slideDown('fast')
+
+			    }
+
+			    $(document).ready(function() {
+
+			        var app = new App() // вызов конструктора нашего модуля App
+
+			        // Создадим объект $.oc, если его нет
+			        // $.oc  - может быть любое название, не обязательно "oc"
+			        // пример будущего использования
+			        // $.myObject.myFunctions
+			        if ($.oc === undefined)
+			            $.oc = {}
+
+			        $.oc.App = app
+
+			    })
+
+			}(window.jQuery);
+        </script>
+
+    </body>
+</html>
